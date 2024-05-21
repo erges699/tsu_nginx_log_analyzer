@@ -4,6 +4,7 @@
 Использованы следующие технологии и пакеты:
 <p align="left"> 
 <a href="https://www.python.org" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="python" width="40" height="40"> </a>
+<a href="https://tqdm.github.io" target="_blank" rel="noreferrer"> <img src="https://tqdm.github.io/img/logo-trans.gif" alt="python" width="40" height="40"> </a>
 </p>
 
 <h3 align="left">Задание для студентов МИИГАиК - Вариант 2 (2024г):</h3>
@@ -16,7 +17,7 @@
 git@github.com:erges699/tsu_nginx_log_analyzer.git
 ```
 
-### Создать и активировать виртуальное окружение, установить в него зависимости:
+### Создать и активировать виртуальное окружение, установить в него зависимости (tqdm):
 
 ```
 $ python3.9 -m venv venv
