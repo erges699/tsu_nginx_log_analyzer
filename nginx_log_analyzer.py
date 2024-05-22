@@ -189,8 +189,8 @@ def main(file_path):
                     score_1_illegitimacy_list,
                     value=(score[1], tuple(parsing_result))
                     )
-    print_results()
     logging.info('Парсер завершил работу.')
+    print_results()
 
 
 if __name__ == "__main__":
