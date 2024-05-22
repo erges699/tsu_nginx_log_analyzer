@@ -1,25 +1,24 @@
 """
-Используя любой скриптовый язык (Python, Ruby, Javascript, Perl) написать
-скрипт для анализа лог файлов сервера nginx. Требуется определить Top-20
-подозрительных запросов.
-Определение подозрительности может осуществляться на основе black и white
-листов. Требуется реализовать не менее 4 признаков(принадлежность к
-определенному IP не может быть признаком). Запрос считается подозрительным
-при совпадении не менее двух признаков.
+Скрипт для анализа лог файлов сервера nginx. Определяет Top-20 подозрительных запросов.
+Определение подозрительности может осуществляться на основе 4 признаков (принадлежность 
+к определенному IP не является признаком). Запрос считается подозрительным при совпадении 
+не менее двух признаков.
 
-Результат работы нужно продемонстрировать для предоставленного лог файла.
-Работа сдается в виде:
-1) одиночного файла скрипта, готового для запуска
-2) указание на зависимые библиотеки (если есть)
-3) скриншот и лог работы скрипта с выводом Top20 и для каждого
-результата - перечисление на сработавшие признаки
-Возможно предоставление решения в виде публичной песочницы, например на https://repl.it
+Результат парсинга записывается в лог.
 """
 import re
 import sys
+import logging
 
+from pathlib import Path
+from logging.handlers import RotatingFileHandler
 from tqdm import tqdm
 
+
+LOG_FORMAT = '"%(asctime)s - [%(levelname)s] - %(message)s"'
+DT_FORMAT = '%d.%m.%Y %H:%M:%S'
+DATETIME_FORMAT = '%Y-%m-%d_%H-%M-%S'
+BASE_DIR = Path(__file__).parent
 
 IP_PATTERN = '(?P<ipaddress>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
 DATE_TIME_PATTERN = '\[(?P<dateandtime>[^\]]+)\]'
@@ -86,6 +85,21 @@ score_1_illegitimacy_list = []
 top_illegitimacy_list = {"4": 0, "3": 0, "2": 0, "1": 0}
 
 
+def configure_logging():
+    log_dir = BASE_DIR / 'logs'
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / 'parser.log'
+    rotating_handler = RotatingFileHandler(
+        log_file, maxBytes=10 ** 6, backupCount=5
+    )
+    logging.basicConfig(
+        datefmt=DT_FORMAT,
+        format=LOG_FORMAT,
+        level=logging.INFO,
+        handlers=(rotating_handler, logging.StreamHandler())
+    )
+
+
 def re_check(check_request, check_pattern):
     return check_pattern.search(check_request)
 
@@ -114,7 +128,8 @@ def checking_result(result):
     if user_agent_illegitimacy:
         score += 1
         score_list.append('user-agent illegitimacy')
-
+    logging.info(f'Подозрительно: {score_list}')
+    logging.info(f'Строка лога: {result}')
     return str(score), score_list
 
 
@@ -148,6 +163,8 @@ def print_results():
 
 
 def main(file_path):
+    configure_logging()
+    logging.info('Парсер запущен!')    
     with open(file_path, 'rt') as file_in:
         for log_line in tqdm(file_in, desc='Разбираю лог'):
             parsing_result = parsing_log(log_line)
@@ -172,9 +189,10 @@ def main(file_path):
                     score_1_illegitimacy_list,
                     value=(score[1], tuple(parsing_result))
                     )
+    print_results()
+    logging.info('Парсер завершил работу.')
 
 
 if __name__ == "__main__":
     LOG_FILE_PATH = sys.argv[1]
     main(LOG_FILE_PATH)
-    print_results()
